@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvConfiguration, JoiValidationSchema } from '@/config';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EnvConfiguration, JoiValidationSchema } from '@/config';
         synchronize: configService.get<string>('environment') === 'dev',
       }),
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { handleDBErrors } from '@/common/utils';
 
 @Injectable()
 export class UsersService {
@@ -13,8 +14,12 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const user = this.usersRepository.create(createUserDto);
-    return await this.usersRepository.save(user);
+    try {
+      const user = this.usersRepository.create(createUserDto);
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      handleDBErrors(error, 'UsersService');
+    }
   }
 
   findAll() {

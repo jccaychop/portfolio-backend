@@ -17,11 +17,11 @@ export class CreateProjectDto extends SeoDto {
   @Type(() => TranslatedFieldDto)
   title: TranslatedFieldDto;
 
-  @IsDefined()
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => TranslatedFieldDto)
-  slug: TranslatedFieldDto;
+  slug?: TranslatedFieldDto;
 
   @IsDefined()
   @IsObject()

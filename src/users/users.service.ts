@@ -65,7 +65,15 @@ export class UsersService {
     }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.findOne(id);
+
+    try {
+      const result = await this.usersRepository.softDelete(id);
+      if (result.affected === 1)
+        return { message: `User with id ${id} has been successfully removed` };
+    } catch (error) {
+      handleDBErrors(error, 'UsersService');
+    }
   }
 }

@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   ValidateNested,
 } from 'class-validator';
 import { SeoDto, TranslatedFieldDto } from '@/common/dtos';
@@ -35,9 +36,11 @@ export class CreateProjectDto extends SeoDto {
   @Type(() => TranslatedFieldDto)
   content: TranslatedFieldDto;
 
-  @IsString()
-  @IsUrl({}, { message: 'GitHub URL must be a valid URL address' })
   @IsOptional()
+  @Matches(/^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/, {
+    message:
+      'githubUrl must be a valid GitHub repository URL (e.g., https://github.com/user/repo)',
+  })
   githubUrl?: string;
 
   @IsString()

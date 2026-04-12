@@ -1,11 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { PaginationDto } from '@/common/dtos';
-import { generateUniqueSlug, handleDBErrors } from '@/common/utils';
+import {
+  generateUniqueSlug,
+  handleDBErrors,
+  hasSlugCollision,
+  sanitizeSlug,
+} from '@/common/utils';
 
 @Injectable()
 export class ProjectsService {
@@ -15,17 +24,29 @@ export class ProjectsService {
   ) {}
 
   async create(createProjectDto: CreateProjectDto) {
-    try {
-      if (!createProjectDto.slug) {
-        createProjectDto.slug = await generateUniqueSlug(
-          this.projectRepository,
-          createProjectDto.title,
+    if (!createProjectDto.slug) {
+      createProjectDto.slug = await generateUniqueSlug(
+        this.projectRepository,
+        createProjectDto.title,
+      );
+    } else {
+      createProjectDto.slug = sanitizeSlug(createProjectDto.slug);
+      const isCollision = await hasSlugCollision(
+        this.projectRepository,
+        createProjectDto.slug,
+      );
+
+      if (isCollision) {
+        throw new BadRequestException(
+          'One of the provided slugs is already in use by another project',
         );
       }
+    }
 
-      const project = this.projectRepository.create(createProjectDto);
+    const project = this.projectRepository.create(createProjectDto);
+
+    try {
       await this.projectRepository.save(project);
-
       return project;
     } catch (error) {
       handleDBErrors(error, 'ProjectsService');
@@ -51,11 +72,50 @@ export class ProjectsService {
     return project;
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(id: string, updateProjectDto: UpdateProjectDto) {
+    if (updateProjectDto.slug) {
+      updateProjectDto.slug = sanitizeSlug(updateProjectDto.slug);
+
+      const isCollision = await hasSlugCollision(
+        this.projectRepository,
+        updateProjectDto.slug,
+        id,
+      );
+
+      if (isCollision) {
+        throw new BadRequestException(
+          'One of the provided slugs is already in use by another project',
+        );
+      }
+    }
+
+    const project = await this.projectRepository.preload({
+      id,
+      ...updateProjectDto,
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with id ${id}, not found`);
+    }
+
+    try {
+      return await this.projectRepository.save(project);
+    } catch (error) {
+      handleDBErrors(error, 'ProjectsService');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: string) {
+    await this.findOne(id);
+
+    try {
+      const result = await this.projectRepository.softDelete(id);
+      if (result.affected === 1)
+        return {
+          message: `Project with id ${id} has been successfully removed`,
+        };
+    } catch (error) {
+      handleDBErrors(error, 'ProjectsService');
+    }
   }
 }

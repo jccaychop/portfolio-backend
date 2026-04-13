@@ -4,8 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvConfiguration, JoiValidationSchema } from '@/config';
-import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
+import { StorageModule } from './storage/storage.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,17 +20,18 @@ import { ProjectsModule } from './projects/projects.module';
       useFactory: (configService: ConfigService) => ({
         ssl: configService.get<string>('stage') === 'prod',
         type: 'postgres',
-        host: configService.get<string>('dbHost'),
-        port: configService.get<number>('dbPort'),
-        username: configService.get<string>('dbUsername'),
-        password: configService.get<string>('dbPassword'),
-        database: configService.get<string>('dbName'),
+        host: configService.get<string>('db.host'),
+        port: configService.get<number>('db.port'),
+        username: configService.get<string>('db.username'),
+        password: configService.get<string>('db.password'),
+        database: configService.get<string>('db.name'),
         autoLoadEntities: true,
         synchronize: configService.get<string>('environment') === 'dev',
       }),
     }),
-    UsersModule,
     ProjectsModule,
+    StorageModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

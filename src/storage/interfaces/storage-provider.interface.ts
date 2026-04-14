@@ -1,4 +1,8 @@
 export interface IStorageProvider {
-  upload(file: any): Promise<{ url: string; publicId: string }>;
+  upload(
+    file: Express.Multer.File,
+    path?: string,
+  ): Promise<{ url: string; publicId: string }>;
+
   delete(publicId: string): Promise<boolean>;
 }

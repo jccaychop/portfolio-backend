@@ -2,6 +2,7 @@ import { BeforeInsert, Column, Entity } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 import { CoreEntity } from '@/common/entities';
+import { ValidRoles } from '../enums';
 
 @Entity('users')
 export class User extends CoreEntity {
@@ -14,6 +15,14 @@ export class User extends CoreEntity {
 
   @Column('text')
   fullName!: string;
+
+  @Column({
+    type: 'enum',
+    enum: ValidRoles,
+    array: true,
+    default: [ValidRoles.USER],
+  })
+  roles!: ValidRoles[];
 
   @Column('boolean', { default: true })
   isActive!: boolean;

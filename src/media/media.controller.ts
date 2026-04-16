@@ -1,14 +1,21 @@
 import {
   Controller,
+  Delete,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
+  ParseUUIDPipe,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
+import { MediaType } from './enums';
+import { ParseMediaTypePipe } from './pipes';
 
 @Controller('media')
 export class MediaController {
@@ -31,5 +38,20 @@ export class MediaController {
     files: Express.Multer.File[],
   ) {
     return this.mediaService.upload(files);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.mediaService.findOne(id);
+  }
+
+  @Get()
+  findAll(@Query('type', ParseMediaTypePipe) type?: MediaType) {
+    return this.mediaService.findAll(type);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.mediaService.remove(id);
   }
 }

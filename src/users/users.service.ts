@@ -42,11 +42,29 @@ export class UsersService {
     return user;
   }
 
+  async findOneByEmail(email: string) {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        roles: true,
+        isActive: true,
+      },
+    });
+
+    if (!user)
+      throw new NotFoundException(`User with email ${email}, not found`);
+
+    return user;
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
 
     if (updateUserDto.password) {
-      updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     const user = await this.usersRepository.preload({

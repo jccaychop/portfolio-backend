@@ -4,8 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvConfiguration, JoiValidationSchema } from '@/config';
+import { AuthModule } from './auth/auth.module';
 import { MediaModule } from './media/media.module';
 import { ProjectsModule } from './projects/projects.module';
+import { SeedModule } from './seed/seed.module';
 import { StorageModule } from './storage/storage.module';
 import { UsersModule } from './users/users.module';
 
@@ -30,8 +32,10 @@ import { UsersModule } from './users/users.module';
         synchronize: configService.get<string>('environment') === 'dev',
       }),
     }),
+    AuthModule,
     MediaModule,
     ProjectsModule,
+    SeedModule,
     StorageModule,
     UsersModule,
   ],

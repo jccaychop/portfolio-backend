@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { PaginationDto } from '@/common/dtos';
 import { handleDBErrors } from '@/common/utils';
+import { ValidRoles } from './enums';
 
 @Injectable()
 export class UsersService {
@@ -20,7 +21,19 @@ export class UsersService {
       const user = this.usersRepository.create(createUserDto);
       return await this.usersRepository.save(user);
     } catch (error) {
-      handleDBErrors(error, 'UsersService');
+      throw handleDBErrors(error, 'UsersService');
+    }
+  }
+
+  async createAdmin(createUserDto: CreateUserDto) {
+    try {
+      const user = this.usersRepository.create({
+        ...createUserDto,
+        roles: [ValidRoles.ADMIN],
+      });
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      throw handleDBErrors(error, 'UsersService');
     }
   }
 
@@ -60,6 +73,17 @@ export class UsersService {
     return user;
   }
 
+  async findOneByEmailSilent(email: string) {
+    try {
+      return await this.usersRepository.findOne({
+        where: { email },
+        withDeleted: true,
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
 
@@ -79,7 +103,7 @@ export class UsersService {
     try {
       return await this.usersRepository.save(user);
     } catch (error) {
-      handleDBErrors(error, 'UsersService');
+      throw handleDBErrors(error, 'UsersService');
     }
   }
 
@@ -91,7 +115,20 @@ export class UsersService {
       if (result.affected === 1)
         return { message: `User with id ${id} has been successfully removed` };
     } catch (error) {
-      handleDBErrors(error, 'UsersService');
+      throw handleDBErrors(error, 'UsersService');
+    }
+  }
+
+  async restoreAdmin(id: string) {
+    try {
+      await this.usersRepository.restore(id);
+
+      await this.usersRepository.update(id, {
+        isActive: true,
+        roles: [ValidRoles.ADMIN],
+      });
+    } catch (error) {
+      throw handleDBErrors(error, 'UsersService (Restore)');
     }
   }
 }

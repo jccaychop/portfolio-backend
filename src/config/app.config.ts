@@ -15,4 +15,9 @@ export const EnvConfiguration = () => ({
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
+  seed: {
+    adminEmail: process.env.ADMIN_EMAIL,
+    adminPassword: process.env.ADMIN_PASSWORD,
+  },
+  jwtSecret: process.env.JWT_SECRET,
 });

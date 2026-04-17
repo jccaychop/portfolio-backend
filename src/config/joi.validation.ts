@@ -32,4 +32,10 @@ export const JoiValidationSchema = Joi.object({
     then: Joi.required(),
     otherwise: Joi.optional(),
   }),
+
+  // SEED
+  ADMIN_EMAIL: Joi.string().required(),
+  ADMIN_PASSWORD: Joi.string().required(),
+
+  JWT_SECRET: Joi.string().required(),
 });

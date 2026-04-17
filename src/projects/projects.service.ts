@@ -49,7 +49,7 @@ export class ProjectsService {
       await this.projectRepository.save(project);
       return project;
     } catch (error) {
-      handleDBErrors(error, 'ProjectsService');
+      throw handleDBErrors(error, 'ProjectsService');
     }
   }
 
@@ -101,7 +101,7 @@ export class ProjectsService {
     try {
       return await this.projectRepository.save(project);
     } catch (error) {
-      handleDBErrors(error, 'ProjectsService');
+      throw handleDBErrors(error, 'ProjectsService');
     }
   }
 
@@ -115,7 +115,7 @@ export class ProjectsService {
           message: `Project with id ${id} has been successfully removed`,
         };
     } catch (error) {
-      handleDBErrors(error, 'ProjectsService');
+      throw handleDBErrors(error, 'ProjectsService');
     }
   }
 }

@@ -43,6 +43,7 @@ export class UsersService {
     const users = await this.usersRepository.find({
       take: limit,
       skip: offset,
+      withDeleted: true,
     });
 
     return users;

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login-user.dto';
 import { UsersService } from '@/users/users.service';
+import { User } from '@/users/entities/user.entity';
 
 export interface JwtPayload {
   id: string;
@@ -31,6 +32,16 @@ export class AuthService {
       throw new UnauthorizedException('User is inactive, talk with an admin');
     }
 
+    const payload: JwtPayload = { id: user.id, roles: user.roles };
+    const token = this.getJwtToken(payload);
+
+    return {
+      user,
+      token,
+    };
+  }
+
+  checkAuthStatus(user: User) {
     const payload: JwtPayload = { id: user.id, roles: user.roles };
     const token = this.getJwtToken(payload);
 

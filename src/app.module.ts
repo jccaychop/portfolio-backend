@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvConfiguration, JoiValidationSchema } from '@/config';
+import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { MediaModule } from './media/media.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
         synchronize: configService.get<string>('environment') === 'dev',
       }),
     }),
+    ArticlesModule,
     AuthModule,
     MediaModule,
     ProjectsModule,

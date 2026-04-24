@@ -13,11 +13,14 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { PaginationDto } from '@/common/dtos';
+import { Auth } from '@/auth/decorators';
+import { ValidRoles } from '@/users/enums';
 
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
+  @Auth(ValidRoles.ADMIN)
   @Post()
   create(@Body() createArticleDto: CreateArticleDto) {
     return this.articlesService.create(createArticleDto);
@@ -33,6 +36,7 @@ export class ArticlesController {
     return this.articlesService.findOne(id);
   }
 
+  @Auth(ValidRoles.ADMIN)
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -41,6 +45,7 @@ export class ArticlesController {
     return this.articlesService.update(id, updateArticleDto);
   }
 
+  @Auth(ValidRoles.ADMIN)
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.articlesService.remove(id);

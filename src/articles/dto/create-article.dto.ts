@@ -8,7 +8,11 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { SeoDto, TranslatedFieldDto } from '@/common/dtos';
+import {
+  SeoDto,
+  TranslatedContentDto,
+  TranslatedFieldDto,
+} from '@/common/dtos';
 
 export class CreateArticleDto extends SeoDto {
   @IsDefined()
@@ -32,8 +36,8 @@ export class CreateArticleDto extends SeoDto {
   @IsOptional()
   @IsObject()
   @ValidateNested()
-  @Type(() => TranslatedFieldDto)
-  content: TranslatedFieldDto;
+  @Type(() => TranslatedContentDto)
+  content: TranslatedContentDto;
 
   @IsString()
   @IsUrl({}, { message: 'Image URL must be a valid URL address' })

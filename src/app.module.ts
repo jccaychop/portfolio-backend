@@ -10,6 +10,7 @@ import { MediaModule } from './media/media.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SeedModule } from './seed/seed.module';
 import { StorageModule } from './storage/storage.module';
+import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -39,6 +40,7 @@ import { UsersModule } from './users/users.module';
     ProjectsModule,
     SeedModule,
     StorageModule,
+    TagsModule,
     UsersModule,
   ],
   controllers: [AppController],

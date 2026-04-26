@@ -61,4 +61,7 @@ export class CreateProjectDto extends SeoDto {
   @IsBoolean({ message: 'isPublished must be a boolean value' })
   @IsOptional()
   isPublished?: boolean;
+
+  @IsString({ each: true })
+  tags: string[];
 }

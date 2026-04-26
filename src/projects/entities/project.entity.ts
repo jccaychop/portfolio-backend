@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { SeoEntity } from '@/common/entities';
 import type { TranslatedField } from '@/common/interfaces';
+import { Tag } from '@/tags/entities/tag.entity';
 
 @Entity('projects')
 export class Project extends SeoEntity {
@@ -30,4 +31,18 @@ export class Project extends SeoEntity {
 
   @Column('boolean', { name: 'is_published', default: false })
   isPublished: boolean;
+
+  @ManyToMany(() => Tag, (tag) => tag.projects)
+  @JoinTable({
+    name: 'project_tags',
+    joinColumn: {
+      name: 'project_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id',
+    },
+  })
+  tags: Tag[];
 }

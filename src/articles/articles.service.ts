@@ -1,49 +1,36 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationDto } from '@/common/dtos';
+import { handleDBErrors, processEntitySlug } from '@/common/utils';
+import { TagsService } from '@/tags/tags.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './entities/article.entity';
-import { PaginationDto } from '@/common/dtos';
-import {
-  generateUniqueSlug,
-  handleDBErrors,
-  hasSlugCollision,
-  sanitizeSlug,
-} from '@/common/utils';
 
 @Injectable()
 export class ArticlesService {
   constructor(
     @InjectRepository(Article)
     private articleRepository: Repository<Article>,
+    private readonly tagsService: TagsService,
   ) {}
 
   async create(createArticleDto: CreateArticleDto) {
-    if (!createArticleDto.slug) {
-      createArticleDto.slug = await generateUniqueSlug(
-        this.articleRepository,
-        createArticleDto.title,
-      );
-    } else {
-      createArticleDto.slug = sanitizeSlug(createArticleDto.slug);
-      const isCollision = await hasSlugCollision(
-        this.articleRepository,
-        createArticleDto.slug,
-      );
+    const { tags: tagNames = [], ...articleData } = createArticleDto;
 
-      if (isCollision) {
-        throw new BadRequestException(
-          'One of the provided slugs is already in use by another article',
-        );
-      }
-    }
+    articleData.slug = await processEntitySlug({
+      repository: this.articleRepository,
+      providedSlug: articleData.slug,
+      fallbackText: articleData.title,
+    });
 
-    const article = this.articleRepository.create(createArticleDto);
+    const tags = await this.tagsService.findOrCreateTags(tagNames);
+
+    const article = this.articleRepository.create({
+      ...articleData,
+      tags,
+    });
 
     try {
       await this.articleRepository.save(article);
@@ -59,13 +46,17 @@ export class ArticlesService {
     const articles = await this.articleRepository.find({
       take: limit,
       skip: offset,
+      relations: ['tags'],
     });
 
     return articles;
   }
 
   async findOne(id: string) {
-    const article = await this.articleRepository.findOne({ where: { id } });
+    const article = await this.articleRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
 
     if (!article)
       throw new NotFoundException(`Article with id ${id}, not found`);
@@ -73,29 +64,25 @@ export class ArticlesService {
   }
 
   async update(id: string, updateArticleDto: UpdateArticleDto) {
-    if (updateArticleDto.slug) {
-      updateArticleDto.slug = sanitizeSlug(updateArticleDto.slug);
+    const { tags: tagNames, ...updateData } = updateArticleDto;
 
-      const isCollision = await hasSlugCollision(
-        this.articleRepository,
-        updateArticleDto.slug,
-        id,
-      );
-
-      if (isCollision) {
-        throw new BadRequestException(
-          'One of the provided slugs is already in use by another article',
-        );
-      }
-    }
+    updateData.slug = await processEntitySlug({
+      repository: this.articleRepository,
+      providedSlug: updateData.slug,
+      entityId: id,
+    });
 
     const article = await this.articleRepository.preload({
       id,
-      ...updateArticleDto,
+      ...updateData,
     });
 
     if (!article) {
       throw new NotFoundException(`Article with id ${id}, not found`);
+    }
+
+    if (tagNames) {
+      article.tags = await this.tagsService.findOrCreateTags(tagNames);
     }
 
     try {
